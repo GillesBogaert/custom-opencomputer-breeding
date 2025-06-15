@@ -42,10 +42,9 @@ local function checkChild(slot, crop)
                 action.placeCropStick(2)
                 database.updateFarm(emptySlot, crop)
 
-            -- No parent is empty, put in storage
+            -- No parent is empty, harvest seeds to storage chest
             elseif stat >= config.autoSpreadThreshold then
-                action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
-                database.addToStorage(crop)
+                action.harvestSeeds(gps.workingSlotToPos(slot))
                 action.placeCropStick(2)
 
             -- Stats are not high enough
@@ -55,9 +54,8 @@ local function checkChild(slot, crop)
             end
 
         elseif config.keepMutations and (not database.existInStorage(crop)) then
-            action.transplant(gps.workingSlotToPos(slot), gps.storageSlotToPos(database.nextStorageSlot()))
+            action.harvestSeeds(gps.workingSlotToPos(slot))
             action.placeCropStick(2)
-            database.addToStorage(crop)
 
         else
             action.deweed()
@@ -85,6 +83,15 @@ local function spreadOnce(firstRun)
         if #database.getStorage() >= config.storageFarmArea then
             print('autoSpread: Storage Full!')
             return false
+        end
+
+        -- Terminal Condition: Check seed count threshold
+        if config.seedCountThreshold > 0 and targetCrop then
+            local seedCount = action.countSeedsInChest(targetCrop)
+            if seedCount >= config.seedCountThreshold then
+                print(string.format('autoSpread: Seed threshold reached! (%d/%d seeds)', seedCount, config.seedCountThreshold))
+                return false
+            end
         end
 
         -- Terminal Condition
