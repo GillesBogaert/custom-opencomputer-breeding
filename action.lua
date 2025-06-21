@@ -71,27 +71,6 @@ local function dumpInventory()
 end
 
 
-local function countSeedsInChest(targetCropName)
-    local selectedSlot = robot.select()
-    gps.save()
-    gps.go(config.storagePos)
-    
-    local totalSeeds = 0
-    local chestSize = inventory_controller.getInventorySize(sides.down)
-    
-    for slot = 1, chestSize do
-        local stack = inventory_controller.getStackInSlot(sides.down, slot)
-        if stack and stack.name and string.find(stack.name, targetCropName) and string.find(stack.name, "seed") then
-            totalSeeds = totalSeeds + stack.size
-        end
-    end
-    
-    gps.resume()
-    robot.select(selectedSlot)
-    return totalSeeds
-end
-
-
 local function placeCropStick(count)
     local selectedSlot = robot.select()
 
@@ -143,30 +122,6 @@ local function pulseDown()
     redstone.setOutput(sides.down, 15)
     os.sleep(0.1)
     redstone.setOutput(sides.down, 0)
-end
-
-
-local function harvestSeeds(pos)
-    local selectedSlot = robot.select()
-    gps.save()
-
-    if fullInventory() then
-        dumpInventory()
-    end
-
-    gps.go(pos)
-    robot.select(robot.inventorySize() + config.spadeSlot)
-    inventory_controller.equip()
-    robot.useDown()
-
-    robot.suckDown()
-
-    inventory_controller.equip()
-    
-    dumpInventory()
-    
-    gps.resume()
-    robot.select(selectedSlot)
 end
 
 
@@ -302,8 +257,6 @@ return {
     deweed = deweed,
     pulseDown = pulseDown,
     transplant = transplant,
-    harvestSeeds = harvestSeeds,
-    countSeedsInChest = countSeedsInChest,
     cleanUp = cleanUp,
     initWork = initWork
 }
